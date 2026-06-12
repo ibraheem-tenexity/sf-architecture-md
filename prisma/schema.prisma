@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Document {
+  id            String   @id @default(cuid())
+  userId        String   @default("demo-user")
+  repoUrl       String
+  repoOwner     String
+  repoName      String
+  defaultBranch String   @default("main")
+  headSha       String   @default("")
+  title         String
+  mermaid       String   @default("")
+  status        String   @default("generating") // generating | ready | partial | failed
+  truncated     Boolean  @default(false)
+  codemap       String   @default("{}") // JSON string
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  sections      DocumentSection[]
+}
+
+model DocumentSection {
+  id          String   @id @default(cuid())
+  documentId  String
+  sectionKey  String   // overview | module_map | diagram | codemap
+  contentMd   String   @default("")
+  position    Int      @default(0)
+  aiGenerated Boolean  @default(true)
+  stale       Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, sectionKey])
+}
